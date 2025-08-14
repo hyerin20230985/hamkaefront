@@ -1,5 +1,5 @@
-import { Route, Routes } from 'react-router-dom'
-import './index.css'
+import { Route, Routes } from 'react-router-dom';
+import './index.css';
 import "./css/style.css";
 import Mappage from './pages/Mappage';
 import Reportpage from './pages/Reportpage';
@@ -7,7 +7,10 @@ import Uploadpage from './pages/Uploadpage';
 import Loginpage from './pages/Loginpage';
 import Start from './pages/Start';
 import Errpage from './pages/Errpage';
-
+import Maps from './pages/Maps';
+import Introduce from './pages/Introduce';
+import MyPage from './pages/Mypage';
+import Register from './pages/Register';
 
 function App() {
 
@@ -20,6 +23,10 @@ function App() {
         <Route path='/login' element={<Loginpage/>}/>
         <Route path='/hamkae' element={<Start/>}/>
         <Route path='/err' element={<Errpage/>}/>
+        <Route path='/' element={<Maps/>} />
+        <Route path='/Introduce' element={<Introduce/>} />
+        <Route path='/MyPage' element={<MyPage/>} />
+        <Route path='/Register' element={<Register/>} />
       </Routes>
     </div>
   )
