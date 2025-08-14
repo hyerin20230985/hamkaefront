@@ -16,10 +16,10 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path='/' element={<Mappage/>} />
+        <Route path='/' element={<Loginpage/>}/> {/*로그인 페이지*/}
+        <Route path='/map' element={<Mappage/>} /> {/*맵 페이지*/}
         <Route path='/report' element={<Reportpage/>} />
         <Route path='/upload' element={<Uploadpage/>} />
-        <Route path='/login' element={<Loginpage/>}/>
         <Route path='/hamkae' element={<Start/>}/>
         <Route path='/err' element={<Errpage/>}/>
         <Route path='/Introduce' element={<Introduce/>} />
