@@ -1,12 +1,14 @@
 @media (min-width: 375px) {
   .App {
     width: 375px;
+    margin: 0 auto;
   }
 }
 
 @media (max-width: 500px) {
   .App {
     width: 100vw;
+    margin: 0 auto;
   }
 }
 
