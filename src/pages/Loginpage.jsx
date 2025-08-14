@@ -1,6 +1,4 @@
-import React from 'react';
-
-import { authAPI } from "../lib/authAPI";
+import React, {useState, useEffect} from 'react';
 
 const Loginpage = () => {
     const [currentView, setCurrentView] = useState('login'); // 'login', 'register', 'dashboard'
