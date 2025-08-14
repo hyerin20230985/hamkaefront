@@ -9,7 +9,7 @@ import Start from './pages/Start';
 import Errpage from './pages/Errpage';
 import Introduce from './pages/Introduce';
 import MyPage from './pages/Mypage';
-import Register from './pages/Register';
+// import Register from './pages/Register';
 
 function App() {
 
@@ -24,7 +24,7 @@ function App() {
         <Route path='/err' element={<Errpage/>}/>
         <Route path='/Introduce' element={<Introduce/>} />
         <Route path='/MyPage' element={<MyPage/>} />
-        <Route path='/Register' element={<Register/>} />
+        {/* <Route path='/Register' element={<Register/>} /> */}
       </Routes>
     </div>
   )

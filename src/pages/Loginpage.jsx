@@ -1,7 +1,9 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
+import { useState, useEffect } from "react";
+import Login from '../components/Login';
 
 const Loginpage = () => {
-    const [currentView, setCurrentView] = useState('login'); // 'login', 'register', 'dashboard'
+    const [currentView, setCurrentView] = useState('login'); 
   const [username, setUsername] = useState('');
 
   // 컴포넌트 마운트 시 로컬 스토리지에서 토큰 확인
@@ -11,13 +13,13 @@ const Loginpage = () => {
     
     if (token && savedUsername) {
       setUsername(savedUsername);
-      setCurrentView('dashboard');
+      setCurrentView('Mappage');
     }
   }, []);
 
   const handleLoginSuccess = (user) => {
     setUsername(user);
-    setCurrentView('dashboard');
+    setCurrentView('Mappage');
   };
 
   const handleLogout = () => {
@@ -49,9 +51,9 @@ const Loginpage = () => {
             onSwitchToLogin={switchToLogin}
           />
         );
-      case 'dashboard':
+        case 'Mappage':
         return (
-          <Dashboard 
+          <Mappage 
             username={username}
             onLogout={handleLogout}
           />
