@@ -1,9 +1,9 @@
 import React from 'react';
 import Maps from '../components/Maps';
 import { useState } from "react";
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-const Mappage = () => {
+const Mappage = ({ username }) => {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
 
@@ -14,7 +14,7 @@ const Mappage = () => {
                     <p className='font-bold text-xl p-4 mt-4'>함께줍줍</p>
                     <div className='mr-4 mt-4 ml-auto flex items-center gap-2'>
                         <img src='/account_circle.png' alt='회원' className='w-7'/>
-                        <span className='text-sm'>안녕하세요 000님!</span> 
+                        <span className='text-sm'>안녕하세요 {username}님!</span> 
                     </div>
                 </div>
                 <div className='rounded-t-2xl overflow-hidden shadow'>

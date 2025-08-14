@@ -10,7 +10,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
     username: '',
     password: '',
   });
-  const [error, setError] = useState('');
+  
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -22,7 +22,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    console.log("로그인 시도:", formData);
     setLoading(true);
 
     try {
@@ -32,13 +32,14 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
       localStorage.setItem('token', token);
       localStorage.setItem('username', formData.username);
       
-      // 로그인 성공 콜백 호출
+      // 로그인 성공 알림 및 콜백 호출
+      alert('로그인 완료!');
       onLoginSuccess(formData.username);
     } catch (error) {
       if (error.response?.data) {
-        setError(error.response.data);
+        alert(error.response.data);
       } else {
-        setError('로그인 중 오류가 발생했습니다.');
+        alert('로그인 중 오류가 발생했습니다.');
       }
     } finally {
       setLoading(false);
@@ -109,7 +110,7 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
                             </button>  
                             </div>
                         </form>
-                        {error && <div className="error-message">{error}</div>}
+                        
                     </div>
                 </div>
             </div>
