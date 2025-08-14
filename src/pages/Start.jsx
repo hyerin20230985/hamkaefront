@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Maps = () => {
+const Start = () => {
     return (
         <div>
             
@@ -8,4 +8,4 @@ const Maps = () => {
     );
 };
 
-export default Maps;
+export default Start;
