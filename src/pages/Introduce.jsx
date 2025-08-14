@@ -103,9 +103,7 @@ const Introduce = () => {
         if (currentPage < pages.length - 1) {
             setCurrentPage(currentPage + 1);
         } else {
-            if (window.confirm('소개가 완료되었습니다!')) {
-                navigate('/');
-            }
+            navigate('/map');
         }
     };
 
@@ -134,7 +132,7 @@ const Introduce = () => {
             {/* 버튼 */}
             <button
                 onClick={handleNext}
-                className="bg-green-400 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg w-4/5 max-w-xs mt-6"
+                className="bg-[#73C03F] hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg w-4/5 max-w-xs mt-6"
             >
                 {currentPage === pages.length - 1 ? '완료' : '다음'}
             </button>

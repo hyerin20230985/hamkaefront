@@ -94,7 +94,7 @@ const Uploadpage = () => {
     return (
         <div className='bg-[#73C03F] text-white'>
             <div className='flex'>
-                <button onClick={() => navigate("/")}>
+                <button onClick={() => navigate("/map")}>
                     <img src='/navigate-before.png' className='w-10 mt-5 ml-2'/>
                 </button>
                 <span className='font-bold mt-7 mr-2'>청소 인증 업로드</span>
