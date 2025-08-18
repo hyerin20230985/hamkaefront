@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Maps from '../components/Maps';
-import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 
-const Mappage = ({ username }) => {
+const Mappage = () => {
     const [open, setOpen] = useState(false);
+    const [username, setUsername] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const savedUsername = localStorage.getItem('username');
+        if (savedUsername) {
+            setUsername(savedUsername);
+        }
+    }, []);
 
     return (
         <div className='text-white'>
@@ -14,7 +21,7 @@ const Mappage = ({ username }) => {
                     <p className='font-bold text-xl p-4 mt-4'>함께줍줍</p>
                     <div className='mr-4 mt-4 ml-auto flex items-center gap-2'>
                         <img src='/account_circle.png' alt='회원' className='w-7'/>
-                        <span className='text-sm'>안녕하세요 {username}님!</span> 
+                        {username && <span className='text-sm'>안녕하세요 {username}님!</span>}
                     </div>
                 </div>
                 <div className='rounded-t-2xl overflow-hidden shadow'>
