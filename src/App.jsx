@@ -9,30 +9,33 @@ import Errpage from './pages/Errpage';
 import Introduce from './pages/Introduce';
 import MyPage from './pages/Mypage';
 import Register from './pages/Register';
-import Mainpage from './pages/Mainpage';
-import Navbar from './components/Navbar';
 import ReportHistory from './pages/ReportHistory';
 import VerificationHistory from './pages/VerificationHistory';
 import PointExchange from './pages/PointExchange';
 import Inquiry from './pages/Inquiry';
+import Mainpage from './pages/Mainpage';
+import Navbar from './components/Navbar';
 
 function App() {
-
-  return (
-    <div className="App">
-      <Routes>
-        <Route path='/' element={<Loginpage/>}/> {/*로그인 페이지*/}
-        <Route path='/map' element={<Mappage/>} /> {/*맵 페이지*/}
-        <Route path='/report' element={<Reportpage/>} />
-        <Route path='/upload' element={<Uploadpage/>} />
-        <Route path='/hamkae' element={<Start/>}/>
-        <Route path='/err' element={<Errpage/>}/>
-        <Route path='/Introduce' element={<Introduce/>} />
-        <Route path='/MyPage' element={<MyPage/>} />
-        <Route path='/Register' element={<Register/>} />
-      </Routes>
-    </div>
-  )
+    return (
+        <div className="App">
+            <Routes>
+                <Route path='/' element={<Loginpage/>}/> {/*로그인 페이지*/}
+                <Route path='/map' element={<Mappage/>} /> {/*맵 페이지*/}
+                <Route path='/report' element={<Reportpage/>} />
+                <Route path='/upload/:markerId' element={<Uploadpage/>} />
+                <Route path='/err' element={<Errpage/>}/>
+                <Route path='/Introduce' element={<Introduce/>} />
+                <Route path='/MyPage' element={<MyPage/>} />
+                <Route path='/Register' element={<Register/>} />
+                <Route path='/home' element={<Mainpage/>}/> 
+                <Route path="/report-history" element={<ReportHistory />} /> {/* 제보내역 */}
+                <Route path="/verification-history" element={<VerificationHistory />} /> {/* 인증내역 */}
+                <Route path="/point-exchange" element={<PointExchange />} /> {/* 포인트 전환 */}
+                <Route path="/inquiry" element={<Inquiry />} /> {/* 1대1 문의 */}
+            </Routes>
+            <Navbar/>
+        </div>
+    );
 }
-
 export default App;
