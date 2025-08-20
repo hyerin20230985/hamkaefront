@@ -3,48 +3,60 @@ import { useNavigate } from "react-router-dom";
 import { authAPI } from '../lib/authAPI';
 import { useState } from "react";
 
-const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
+const Login = ({ onLoginSuccess }) => {
     const navigate = useNavigate();
-
-    const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const token = await authAPI.login(formData.username, formData.password);
+    
+        const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+      });
       
-      // 토큰과 사용자명을 로컬 스토리지에 저장
-      localStorage.setItem('token', token);
-      localStorage.setItem('username', formData.username);
-      
-      // 로그인 성공 콜백 호출
-      onLoginSuccess(formData.username);
-    } catch (error) {
-      if (error.response?.data) {
-        setError(error.response.data);
-      } else {
-        setError('로그인 중 오류가 발생했습니다.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
+      const [loading, setLoading] = useState(false);
+    
+      const handleChange = (e) => {
+        setFormData({
+          ...formData,
+          [e.target.name]: e.target.value,
+        });
+      };
+    
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        console.log("로그인 시도:", formData);
+        setLoading(true);
+    
+        try {
+          // 작업자명 : 윤준하
+          // 날짜 : 2025-08-14
+          // 수정내용 : 백엔드 응답 구조에 맞게 토큰과 사용자 정보 저장 수정
+          const response = await authAPI.login(formData.username, formData.password);
+          
+          if (response.success) {
+            // 백엔드 응답 구조: { success: true, message: "로그인 성공", data: { token: "...", user: {...} } }
+            const { token, user } = response.data;
+            
+            // 토큰과 사용자명을 로컬 스토리지에 저장
+            localStorage.setItem('token', token);
+            localStorage.setItem('username', user.name);
+            
+            // 로그인 성공 알림 및 콜백 호출
+            alert('로그인 완료!');
+            onLoginSuccess(user.name);
+          } else {
+            alert(response.message || '로그인에 실패했습니다.');
+          }
+          
+        } catch (error) {
+          console.error("로그인 에러:", error);
+          if (error.response?.data?.message) {
+            alert(error.response.data.message);
+          } else {
+            alert('로그인 중 오류가 발생했습니다.');
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
     return (
         <div>
             <div className='relative min-h-screen bg-[#73C03F]'>
@@ -109,7 +121,6 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }) => {
                             </button>  
                             </div>
                         </form>
-                        {error && <div className="error-message">{error}</div>}
                     </div>
                 </div>
             </div>

@@ -45,6 +45,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("회원가입 데이터:", formData);
     setError("");
 
     // 최종 제출 시 유효성 확인

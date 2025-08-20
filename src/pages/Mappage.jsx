@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Maps from '../components/Maps';
-import { useState } from "react";
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Mappage = () => {
     const [open, setOpen] = useState(false);
+    const [username, setUsername] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const savedUsername = localStorage.getItem('username');
+        if (savedUsername) {
+            setUsername(savedUsername);
+        }
+    }, []);
 
     return (
         <div className='text-white'>
@@ -14,10 +21,10 @@ const Mappage = () => {
                     <p className='font-bold text-xl p-4 mt-4'>함께줍줍</p>
                     <div className='mr-4 mt-4 ml-auto flex items-center gap-2'>
                         <img src='/account_circle.png' alt='회원' className='w-7'/>
-                        <span className='text-sm'>안녕하세요 000님!</span> 
+                        {username && <span className='text-sm'>안녕하세요 {username}님!</span>}
                     </div>
                 </div>
-                <div className='rounded-t-2xl overflow-hidden shadow'>
+                <div className='rounded-t-3xl overflow-hidden shadow'>
                 <Maps/>
 
                 {/* 플러스버튼 */}
@@ -25,13 +32,13 @@ const Mappage = () => {
                         type='button'
                         aria-label='제보하기'
                         onClick={() => setOpen(v => !v)}
-                        className='absolute z-50 bottom-6 right-5 md:right-55 lg:right-150 w-12 place-items-center
+                        className='absolute z-50 top-170 right-5 md:right-50 lg:right-153 top-185 w-12 place-items-center
                hover:scale-105 active:scale-95 transition'>
                 <img src='/plusBtn.svg' alt='btn'></img>
                </button>
 
                 {/* 말풍선 */}
-               <div className={`absolute z-50 right-6 bottom-23 md:right-55 lg:right-150
+               <div className={`absolute z-50 right-6 top-120 md:right-55 lg:right-153 top-168
                transition ${open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}>
                     <button
                         type='button'
