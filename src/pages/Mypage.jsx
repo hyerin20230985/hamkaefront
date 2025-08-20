@@ -206,6 +206,8 @@ const MyPage = ({ username }) => {
                             </button>
                         </div>
                     </div>
+                    <div className='w-full h-[330px] bg-white'>
+                    </div>
                 </div>
             ) : (
                 // ✅ 기존 마이페이지 화면

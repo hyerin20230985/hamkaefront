@@ -33,7 +33,6 @@ function App() {
                 <Route path="/point-exchange" element={<PointExchange />} /> {/* 포인트 전환 */}
                 <Route path="/inquiry" element={<Inquiry />} /> {/* 1대1 문의 */}
             </Routes>
-            <Navbar/>
         </div>
     );
 }
