@@ -1,4 +1,5 @@
 import React from 'react';
+import Navbar from '../components/Navbar';
 
 const Mainpage = () => {
     const places = [
@@ -98,6 +99,7 @@ const Mainpage = () => {
         </div>
       </div>
     </div>
+    <Navbar/>
         </div>
     );
 };
