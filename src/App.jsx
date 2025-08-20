@@ -27,7 +27,7 @@ function App() {
                 <Route path="/report-history" element={<ReportHistory />} /> {/* 제보내역 */}
                 <Route path="/verification-history" element={<VerificationHistory />} /> {/* 인증내역 */}
                 <Route path="/point-exchange" element={<PointExchange />} /> {/* 포인트 전환 */}
-                <Route path="/inquiry" element={<Inquiry />} /> {/* 1대1 문의 */}
+                <Route path="/inquiry" element={<Inquiry />} /> 1대1 문의
             </Routes>
         </div>
     );

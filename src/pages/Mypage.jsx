@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'; // [포인트관련] useEffect 추가
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // ✅ axios 사용
+import Navbar from '../components/Navbar';
 
 const MyPage = ({ username }) => {
     const navigate = useNavigate();
@@ -303,6 +304,7 @@ const MyPage = ({ username }) => {
                     </div>
                 </>
             )}
+            <Navbar/>
         </div>
     );
 };
