@@ -8,12 +8,12 @@ const Loginpage = () => {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            navigate('/map');
+            navigate('/home');
         }
     }, [navigate]);
 
     const handleLoginSuccess = () => {
-        navigate('/map');
+        navigate('/home');
     };
 
     return (
