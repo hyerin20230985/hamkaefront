@@ -91,9 +91,9 @@ const ReportHistory = ({ username }) => { // username을 props로 받기
         <div className="max-w-xs mx-auto bg-[#F5F5F5] min-h-screen font-sans flex flex-col">
             <div className="bg-[#73C03F] text-white rounded-b-3xl relative pb-6 pt-4 px-4">
                 <img
-                    src="/arrow.png"
+                    src="../../public/arrow.png"
                     alt="arrow"
-                    className="w-5 h-5 absolute top-4 right-4"
+                    className="w-5 h-5 absolute top-4 left-4"
                 />
                 <div className="flex justify-between items-center mt-10">
                     <h2 className="text-xl font-bold ml-1">
@@ -119,11 +119,7 @@ const ReportHistory = ({ username }) => { // username을 props로 받기
                         onClick={() => handleClickItem(item)}
                     >
                         <span className="text-sm font-medium">{item.date}</span>
-                        <img
-                            src="../../public/arrow.png"
-                            alt="arrow"
-                            className="w-4 h-4"
-                        />
+                        <span className="text-xl">{'>'}</span>
                     </div>
                 ))}
             </div>

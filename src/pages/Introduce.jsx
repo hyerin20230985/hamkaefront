@@ -171,7 +171,7 @@ const Introduce = () => {
         if (currentPage < pages.length - 1) {
             setCurrentPage(currentPage + 1);
         } else {
-            navigate('/map');
+            navigate('/home');
         }
     };
 

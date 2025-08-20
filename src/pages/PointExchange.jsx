@@ -26,7 +26,7 @@ const PointExchange = ({ username = "홍길동" }) => {
                 <img
                     src="../../public/arrow.png"
                     alt="알림 아이콘"
-                    className="w-6 h-6 absolute top-4 right-4"
+                    className="w-6 h-6 absolute top-4 left-4"
                 />
                 <div className="flex flex-col items-center">
                     <img
