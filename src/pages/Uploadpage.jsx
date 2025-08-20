@@ -1,202 +1,183 @@
-import React from 'react';
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { markerAPI } from "../lib/markerAPI";
+import { photosAPI } from "../lib/photosAPI";
+import { getAddressFromCoords } from "../lib/mapUtils";
 
-
-const MAX_LEN = 800;
-const MAX_FILES = 4;
+const MAX_FILES = 5; // API 제약사항에 맞춰 최대 5장
 
 const Uploadpage = () => {
-    const navigate = useNavigate()
-        const [content, setContent] = useState("");
-        const [files, setFiles] = useState(Array(MAX_FILES).fill(null));
-        const [submitting, setSubmitting] = useState(false);
+    const navigate = useNavigate();
+    const { markerId } = useParams(); // URL에서 마커 ID 가져오기
 
-        const { missionId } = useParams();
-        const token = localStorage.getItem("token");
-        const [marker, setMarker] = useState(null);    // {id, address, photos:[]}
-        const [loc, setLoc] = useState({ lat: null, lng: null });
-        const [memo, setMemo] = useState("");
-        const [afterFiles, setAfterFiles] = useState(Array(MAX_FILES).fill(null));
-        const [beforeFile, setBeforeFile] = useState(null); // (선택) 전 사진 대체 업로드
-        const [loading, setLoading] = useState(true);
-        
-        //미리보기 URL
-        const previews = useMemo(
-            () =>files.map(f => (f ? URL.createObjectURL(f) : null)),
-            [files]
-        );
-        const beforePreview = useMemo(
-            () => (beforeFile ? URL.createObjectURL(beforeFile) : null),
-            [beforeFile]
-        );
-        useEffect(() => () => {
-            afterPreviews.forEach(u => u && URL.revokeObjectURL(u));
-            if (beforePreview) URL.revokeObjectURL(beforePreview);
-        }, [afterPreviews, beforePreview]);
-    
-        const handleFileChange = (idx, e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            if (!/^image\/|^video\//.test(file.type)) {
-                alert("이미지/동영상만 업로드 가능합니다.");
-                e.target.value = "";
-                return;
-            }
-            if (file.size > 50 * 1024 * 1024) {
-                alert("파일 용량은 50MB 이하만 가능합니다.");
-                e.target.value = "";
-                return;
-            }
-            setFiles(prev => {
-                const next = [...prev];
-                next[idx] = file;
-                return next;
-            });
-        };
-    
-        const removeFile = (idx) => {
-            setFiles(prev => {
-                const next = [...prev];
-                next[idx] = null;
-                return next;
-            });
-        };
-        const filledCount = files.filter(Boolean).length;
-    
-        const onSubmit = async (e) => {
-            e.preventDefault();
-            if (!content.trim()) {
-                 alert("내용을 입력해주세요.");
-                return;
-            }
-            setSubmitting(true);
+    const [marker, setMarker] = useState(null);
+    const [address, setAddress] = useState("위치 정보 불러오는 중...");
+    const [beforePhotos, setBeforePhotos] = useState([]);
+    const [afterPhotos, setAfterPhotos] = useState(Array(MAX_FILES).fill(null));
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState("");
+
+    // 데이터 로딩 및 주소 변환
+    useEffect(() => {
+        if (!markerId) {
+            setError("잘못된 접근입니다. 마커 ID가 필요합니다.");
+            setLoading(false);
+            return;
+        }
+        const fetchMarkerData = async () => {
             try {
-                // 실제 API 연동 예시 (FormData)
-                const fd = new FormData();
-                fd.append("content", content.trim());
-                files.forEach((f, i) => f && fd.append("files", f, f.name || `file_${i}`));
-    
-                // TODO: 여기에 실제 엔드포인트로 전송
-                // await fetch("/api/reports", { method: "POST", body: fd });
-                console.log("[REPORT] submit", { content, files });
-                alert("청소 인증이 접수되었습니다! 검토 후 포인트가 지급됩니다.");
-                // 초기화
-                setContent("");
-                setFiles(Array(MAX_FILES).fill(null));
+                const markerData = await markerAPI.get(markerId);
+                setMarker(markerData);
+                const before = markerData.photos.filter(p => p.type === 'BEFORE');
+                setBeforePhotos(before);
+
+                // 주소 변환
+                if (markerData.lat && markerData.lng) {
+                    const fetchedAddress = await getAddressFromCoords(markerData.lat, markerData.lng);
+                    setAddress(fetchedAddress);
+                } else {
+                    setAddress("이 제보에는 위치 정보가 없습니다.");
+                }
+
             } catch (err) {
                 console.error(err);
-                alert("인증 중 오류가 발생했습니다. 다시 시도해주세요.");
-            } finally {
-                setSubmitting(false);
+                setError("마커 정보를 불러오는 데 실패했습니다.");
+                setAddress("위치 정보를 불러올 수 없습니다.");
             }
+            setLoading(false);
         };
-    return (
-        <div className='bg-[#73C03F] text-white'>
-            <div className='flex'>
-                <button onClick={() => navigate("/map")}>
-                    <img src='/navigate-before.png' className='w-10 mt-5 ml-2'/>
-                </button>
-                <span className='font-bold mt-7 mr-2'>청소 인증 업로드</span>
-                <img src='/goodtresh.png' className='w-10 h-10 mt-4'/>
-            </div>
+        fetchMarkerData();
+    }, [markerId]);
 
-            <div className='mt-10 p-2'>
-                <p className='ml-2 mb-2'>현재위치</p>
-                <div className='flex mb-5'>
-                    <img src='/marker.png' className='ml-2 w-3 h-4 mr-2 mt-2'/>
-                    <span className='font-bold text-2xl px-2 mr-2'>경기도 안양시 만안구 성결대학교 53</span>
+    const afterPreviews = useMemo(
+        () => afterPhotos.map((f) => (f ? URL.createObjectURL(f) : null)),
+        [afterPhotos]
+    );
+    useEffect(() => () => afterPreviews.forEach((u) => u && URL.revokeObjectURL(u)), [afterPreviews]);
+
+    const handleFileChange = (idx, e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!/^image\//.test(file.type)) {
+            alert("이미지만 업로드 가능합니다.");
+            return;
+        }
+        setAfterPhotos((prev) => {
+            const next = [...prev];
+            next[idx] = file;
+            return next;
+        });
+    };
+
+    const removeFile = (idx) => {
+        setAfterPhotos((prev) => {
+            const next = [...prev];
+            next[idx] = null;
+            return next;
+        });
+    };
+
+    const filledCount = afterPhotos.filter(Boolean).length;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (filledCount === 0) {
+            alert("청소 후 사진을 1장 이상 업로드해주세요.");
+            return;
+        }
+
+        setSubmitting(true);
+        setError("");
+
+        try {
+            // 1. 청소 후 사진 업로드 -> 성공 시 서버에서 자동으로 AI 검증 시작
+            const imageFiles = afterPhotos.filter(Boolean);
+            await photosAPI.uploadCleanupPhotos({
+                marker_id: markerId,
+                images: imageFiles,
+            });
+
+            alert("청소 인증 사진이 업로드되었습니다. AI 검증이 자동으로 시작되며, 완료 시 포인트가 지급됩니다.");
+            navigate("/map");
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || "작업 중 오류가 발생했습니다.";
+            console.error(err);
+            setError(errorMessage);
+            alert(errorMessage);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (loading) return <div className="p-5">로딩 중...</div>;
+    if (error && !marker) return <div className="p-5 text-red-500">오류: {error}</div>;
+
+    return (
+        <div className='bg-[#73C03F] text-white min-h-screen'>
+            <div className='p-4'>
+                <div className='flex items-center'>
+                    <button onClick={() => navigate("/map")}>
+                        <img src='/navigate-before.png' className='w-10' alt="뒤로가기"/>
+                    </button>
+                    <h1 className='font-bold text-xl ml-2'>청소 인증 업로드</h1>
                 </div>
             </div>
 
-            <div className='bg-white text-[#73C03F] rounded-t-3xl'>
-
-                <form onSubmit={onSubmit} className='p-5'>
-                    <span className='text-sm'>제보 내용</span>
-                    <textarea 
-                        value={content}
-                        onChange={(e) => setContent(e.target.value.slice(0, MAX_LEN))}
-                        placeholder='상황/위치/특이사항 등을 적어주세요.'
-                        className='mt-2 w-full h-40 rounded-xl border-solid border-2 border-[##73C03F] p-3 outline-none focus:ring-1 shadow'
-                    />
-                    <div className='mt-1 text-sm text-grey-500 text-right'>
-                        {content.length}/{MAX_LEN}
+            <div className='bg-white text-black rounded-t-3xl p-5'>
+                <div className='mb-5'>
+                    <p className='text-sm text-gray-500 mb-1'>위치</p>
+                    <div className='flex items-center'>
+                        <img src='/marker.png' className='w-4 h-5 mr-2' alt="위치 마커"/>
+                        <span className='font-bold text-lg text-gray-800'>
+                            {address}
+                        </span>
                     </div>
+                </div>
 
-                    {/* 파일업로드 */}
-                    <div>
-                        <div>
-                            <span>사진 선택 ({filledCount/MAX_FILES})</span>
-                        </div>
-                        <div className='grid grid-cols-4 gap-3 mt-2'>
-                            {files.map((file, idx) => {
-                                const preview = previews[idx];
-                                const isVideo = file?.type?.startsWith("video/");
-                                return (
-                                    <div key={idx} className='relative'>
-                                        <label className='block aspect-square rounded-xl cursor-pointer overflow-hidden
-                                            ring-1 ring-gray-200 bg-[#CFE8B9]/70 hover:bg-[#CFE8B9]/90
-                                            grid place-items-center' title={file ? file.name : "사진/동영상"}
-                                        >
-                                            {/* 숨김 input */}
-                                            <input
-                                                type="file"
-                                                accept="image/*,video/*"
-                                                className="hidden"
-                                                onChange={(e) => handleFileChange(idx, e)}
-                                                capture="environment"
-                                            />
-                                            {/* 프리뷰 or 플레이스홀더 */}
-                                            {file ? (
-                                                isVideo ? (
-                                                <video
-                                                    src={preview}
-                                                    muted
-                                                    loop
-                                                    playsInline
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                ) : (
-                                                <img
-                                                    src={preview}
-                                                    alt={`preview-${idx}`}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                                )
-                                            ) : (
-                                                <div className="flex flex-col items-center text-[11px] text-white">
-                                                    <img src='/camera.png' className='w-7'/>
-                                                    사진/동영상
-                                                </div>
-                                            )}
-                                        </label>
+                <section>
+                    <h2 className="text-lg font-bold text-gray-800 mb-3">제보된 사진 (청소 전)</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                        {beforePhotos.length > 0 ? (
+                            beforePhotos.map(photo => (
+                                <div key={photo.id} className="aspect-square rounded-lg overflow-hidden">
+                                    <img src={`http://localhost:8080${photo.imagePath}`} alt={`제보사진 ${photo.id}`} className="w-full h-full object-cover" />
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500">제보된 사진이 없습니다.</p>
+                        )}
+                    </div>
+                </section>
 
-                                        {/* 삭제 버튼 */}
-                                        {file && (
-                                            <button 
-                                                type='button'
-                                                onClick={() => removeFile(idx)}
-                                                className='absolute -top-2 -right-2 w-6 h-6 rounded-full
-                                   bg-white text-gray-700 shadow grid place-items-center text-xs'
-                                                aria-label="삭제"
-                                                title="삭제"
-                                            >
-                                            ✕
-                                            </button>
+                <hr className="my-6" />
+
+                <form onSubmit={handleSubmit}>
+                    <section>
+                        <h2 className="text-lg font-bold text-gray-800 mb-3">청소 후 사진 업로드 ({filledCount}/{MAX_FILES})</h2>
+                        <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                            {afterPhotos.map((file, idx) => (
+                                <div key={idx} className='relative'>
+                                    <label className='block aspect-square rounded-xl cursor-pointer overflow-hidden ring-1 ring-gray-200 bg-gray-100 hover:bg-gray-200 grid place-items-center' title={file ? file.name : "사진 추가"}>
+                                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(idx, e)} />
+                                        {afterPreviews[idx] ? (
+                                            <img src={afterPreviews[idx]} alt={`preview-${idx}`} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="flex flex-col items-center text-gray-400">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v16m8-8H4" /></svg>
+                                            </div>
                                         )}
-                                    </div>
-                                )
-                            })}
+                                    </label>
+                                    {file && (
+                                        <button type='button' onClick={() => removeFile(idx)} className='absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white shadow grid place-items-center text-xs' aria-label="삭제">✕</button>
+                                    )}
+                                </div>
+                            ))}
                         </div>
-                    </div>
+                    </section>
                     
-                    {/* 제출버튼 */}
-                    <button
-                        type="submit"
-                        disabled={submitting}
-                        className="mt-6 w-full py-3 rounded-xl text-white font-bold disabled:opacity-60 bg-[#73C03F]"
-                    >
-                        {submitting ? "제출 중..." : "업로드하기"}
+                    <button type="submit" disabled={submitting || filledCount === 0} className="mt-8 w-full py-3 rounded-xl text-white font-bold disabled:opacity-60 bg-[#73C03F] hover:bg-[#64AC37] transition">
+                        {submitting ? "제출 중..." : "인증 업로드 및 AI 검증 요청"}
                     </button>
                 </form>
             </div>

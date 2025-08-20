@@ -1,6 +1,16 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// 작업자명 : 윤준하
+// 날짜 : 2025-08-14
+// 수정내용 : API 기본 URL이 설정되지 않았을 때 기본값 제공 및 환경변수 설정 안내 추가
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+
+// 환경변수가 설정되지 않은 경우 경고 메시지 출력
+if (!import.meta.env.VITE_API_BASE_URL) {
+  console.warn('VITE_API_BASE_URL이 설정되지 않았습니다. 기본값 http://localhost:8080을 사용합니다.');
+  console.warn('.env 파일에 VITE_API_BASE_URL=http://localhost:8080을 추가하세요.');
+}
 
  const api = axios.create({
   baseURL: API_BASE_URL,
