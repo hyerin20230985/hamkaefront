@@ -1,7 +1,8 @@
-import React from 'react';
 import Navbar from '../components/Navbar';
+import React, { useState } from 'react';
 
 const Mainpage = () => {
+    const [username, setUsername] = useState('');
     const places = [
   {
     id: 1,
@@ -39,7 +40,12 @@ const Mainpage = () => {
                     <div className='flex justify-between '>
                     <p className='font-bold text-xl p-4 mt-4 text-white'>함께줍줍</p>
                     <div className='mr-4 mt-4 ml-auto flex items-center gap-2'>
-                        <img src='/account_circle.png' alt='회원' className='w-7'/>
+                        <button
+                            type='button'
+                            onClick={() => {navigate("/Mypage"); }}
+                        >
+                            <img src='/account_circle.png' alt='회원' className='w-7'/>
+                        </button>
                     </div>
                 </div>
                 </div>
@@ -52,12 +58,12 @@ const Mainpage = () => {
           alt="hero"
           className="w-full object-cover"
         />
-        <img src='/hamkae-earth.png' alt='hamkae' className='absolute z-50 top-22 right-48 '/>
+        <img src='/hamkae-earth.png' alt='hamkae' className='absolute z-50 top-6 right-50 '/>
         {/* 인사 카드 */}
-        <div className="absolute -bottom-85 w-full flex justify-center">
+        <div className="absolute -bottom-70 w-full flex justify-center">
             <div className="bg-white rounded-t-3xl p-6 w-full max-w-lg">
                 <div className="border-2 border-[#73C03F] rounded-2xl py-2 text-center font-semibold mt-2">
-                반갑습니다. 홍길동님
+                반갑습니다. {username || "사용자"}님
                 </div>
 
                 <div className="flex justify-between items-center mb-3 mt-5">

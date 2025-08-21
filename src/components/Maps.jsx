@@ -15,6 +15,7 @@ const Maps = () => {
 
     // 1. 지도 초기화, 데이터 로딩, 마커 생성 Effect
     useEffect(() => {
+        let watchId = null;
         // window.kakao 객체와 mapRef가 준비되었는지 확인
         if (!window.kakao || !mapRef.current) {
             return;
@@ -50,7 +51,7 @@ const Maps = () => {
                 
                 if (navigator.geolocation) {
                     myMarker.setPosition(center); // 초기 위치 설정
-                    navigator.geolocation.watchPosition((pos) => {
+                    watchId = navigator.geolocation.watchPosition((pos) => {
                         const latlng = new window.kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
                         setMyLocation(latlng);
                         myMarker.setPosition(latlng);
@@ -108,6 +109,19 @@ const Maps = () => {
                 initializeMap(defaultLatLng);
             }
         });
+
+        return () => {
+            if (watchId && navigator.geolocation) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+            // unmount 시 infoWindow와 clusterer 정리
+            if (mapInstance.current.infoWindow) {
+                mapInstance.current.infoWindow.close();
+            }
+            if (mapInstance.current.clusterer) {
+                mapInstance.current.clusterer.clear();
+            }
+        };
     }, []);
 
     // 2. activeMarker 상태에 따라 인포윈도우를 열거나 닫는 Effect
