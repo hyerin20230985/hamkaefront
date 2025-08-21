@@ -118,18 +118,18 @@ const MyPage = ({ username }) => {
 
                     <div className="flex-1 overflow-auto bg-white rounded-t-[28px] -mt-10 px-6 pt-8 pb-12 shadow-md flex flex-col items-center">
                         <p className="text-[#73C03F] font-semibold text-base mb-6 w-full text-left">로그아웃</p>
-                        <input type="text" value={username || ""} readOnly className="w-full border border-[#73C03F] rounded-lg px-4 py-3 mb-4 text-[#73C03F] font-medium" />
+                        <input type="text" value={username || ""} readOnly className="w-full border border-[#73C03F] rounded-lg px-4 py-3 mb-4 text-[#73C03F] font-medium focus:outline-green-600 focus:outline-2 focus:outline-offset-2" />
                         <input
                             type="password"
                             placeholder="비밀번호를 입력해주세요."
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleLogoutConfirm()}
-                            className="w-full border border-[#73C03F] rounded-lg px-4 py-3 mb-2 text-gray-700 placeholder:text-[#73C03F]"
+                            className="w-full border border-[#73C03F] rounded-lg px-4 py-3 mb-2 text-gray-700 placeholder:text-[#73C03F] focus:outline-green-600 focus:outline-2 focus:outline-offset-2"
                         />
                         {error && <p className="w-full text-red-500 text-sm mb-4">{error}</p>}
-                        <div className="flex gap-4 w-full mt-auto">
-                            <button onClick={() => { setShowLogout(false); setPassword(""); setError(""); }} className="flex-1 bg-[#73C03F] text-white rounded-lg py-3 font-semibold">이전</button>
+                        <div className="flex gap-4 w-full mt-10">
+                            <button onClick={() => { setShowLogout(false); setPassword(""); setError(""); }} className="flex-1 bg-[#73C03F] text-white rounded-lg py-3 font-semibold ">이전</button>
                             <button onClick={handleLogoutConfirm} disabled={loading} className="flex-1 bg-[#73C03F] text-white rounded-lg py-3 font-semibold">{loading ? "처리중..." : "로그아웃"}</button>
                         </div>
                     </div>

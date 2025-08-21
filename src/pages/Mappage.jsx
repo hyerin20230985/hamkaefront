@@ -6,14 +6,7 @@ import Navbar from '../components/Navbar';
 const Mappage = () => {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const savedUsername = localStorage.getItem('username');
-        if (savedUsername) {
-            setUsername(savedUsername);
-        }
-    }, []);
-
+    
     return (
         <div className='text-white'>
             <div className='bg-[#73C03F]'>
