@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'; // [포인트관련] useEffect 추가
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios'; // ✅ axios 사용
 import Navbar from '../components/Navbar';
+import axios from 'axios'; // ✅ axios 사용
 
 const MyPage = ({ username }) => {
     const navigate = useNavigate();
@@ -99,11 +99,11 @@ const MyPage = ({ username }) => {
     };
 
     return (
-        <div className="App mx-auto min-h-screen font-sans max-w-[375px]" style={{ backgroundColor: '#73C03F' }}>
+        <div className="flex flex-col min-h-screen font-sans max-w-[375px] mx-auto" style={{ backgroundColor: '#73C03F' }}>
             {showLogout ? (
-                // 로그아웃 화면
-                <div className="min-h-screen flex flex-col">
-                    <div className="relative px-6 pt-6 pb-14 text-white min-h-[120px]">
+                <>
+                    {/* Header */}
+                    <div className="flex-none relative px-6 pt-6 pb-14 text-white h-[120px]">
                         <h1 className="absolute top-6 left-6 flex items-center gap-1">
                             <span className="text-[28px] font-extrabold tracking-tight">
                                 {username || "사용자"}
@@ -111,7 +111,6 @@ const MyPage = ({ username }) => {
                             <span className="text-[14px] font-normal">님</span>
                         </h1>
 
-                        {/* 캐릭터 이미지 */}
                         <img
                             src="../../public/logo.svg"
                             alt="캐릭터"
@@ -119,8 +118,8 @@ const MyPage = ({ username }) => {
                         />
                     </div>
 
-                    {/* 로그아웃 입력 영역 */}
-                    <div className="bg-white rounded-t-[28px] -mt-10 px-6 pt-8 pb-12 shadow-md flex flex-col items-center">
+                    {/* 콘텐츠 영역 */}
+                    <div className="flex-1 overflow-auto bg-white rounded-t-[28px] -mt-10 px-6 pt-8 pb-12 shadow-md flex flex-col items-center">
                         <p className="text-[#73C03F] font-semibold text-base mb-6 w-full text-left">로그아웃</p>
 
                         <input
@@ -143,7 +142,7 @@ const MyPage = ({ username }) => {
 
                         {error && <p className="w-full text-red-500 text-sm mb-4">{error}</p>}
 
-                        <div className="flex gap-4 w-full">
+                        <div className="flex gap-4 w-full mt-auto">
                             <button
                                 onClick={() => {
                                     setShowLogout(false);
@@ -164,12 +163,11 @@ const MyPage = ({ username }) => {
                             </button>
                         </div>
                     </div>
-                    <div className='w-full h-[330px] bg-white'>
-                    </div>
-                </div>
+                </>
             ) : (
                 <>
-                    <div className="relative px-6 pt-6 pb-14 text-white min-h-[120px]">
+                    {/* Header */}
+                    <div className="flex-none relative px-6 pt-6 pb-14 text-white h-[120px]">
                         <h1 className="absolute top-6 left-6 flex items-center gap-1">
                             <span className="text-[28px] font-extrabold tracking-tight">
                                 {username || "사용자"}
@@ -180,7 +178,8 @@ const MyPage = ({ username }) => {
                         <img src="../../public/logo.svg" alt="캐릭터" className="absolute bottom-0 right-6 w-20 h-20" />
                     </div>
 
-                    <div className="bg-white rounded-t-[28px] -mt-10 px-6 pt-8 pb-12 shadow-md">
+                    {/* 콘텐츠 영역 */}
+                    <div className="flex-1 overflow-auto bg-white rounded-t-[28px] -mt-10 px-6 pt-8 pb-12 shadow-md flex flex-col">
                         <div className="mb-6">
                             <p className="text-sm font-medium text-[#73C03F] mb-2">보유 포인트</p>
 
@@ -248,9 +247,9 @@ const MyPage = ({ username }) => {
                             </button>
                         </div>
                     </div>
-                </>
+                </> 
             )}
-            <Navbar/>
+        <Navbar/>
         </div>
     );
 };
