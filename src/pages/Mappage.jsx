@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState,} from 'react';
 import Maps from '../components/Maps';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -6,13 +6,6 @@ import Navbar from '../components/Navbar';
 const Mappage = () => {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const savedUsername = localStorage.getItem('username');
-        if (savedUsername) {
-            setUsername(savedUsername);
-        }
-    }, []);
 
     return (
         <div className='text-white'>

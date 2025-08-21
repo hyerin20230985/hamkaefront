@@ -73,7 +73,7 @@ const PointExchange = ({ username = "홍길동" }) => {
     };
 
     return (
-        <div className="max-w-xs mx-auto bg-white min-h-screen font-sans flex flex-col">
+        <div className="w-[375px] mx-auto bg-white min-h-screen font-sans flex flex-col">
             {/* ===== 상단 헤더 ===== */}
             <div className="bg-[#73C03F] text-white relative pt-1.5 pb-1.5 px-1.5">
                 {/* 뒤로가기 */}
