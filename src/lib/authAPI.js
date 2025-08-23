@@ -1,4 +1,4 @@
-import api from "./apiClient";
+import { api } from "./apiClient";
 
 // 작업자명 : 윤준하
 // 날짜 : 2025-08-14

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Maps from '../components/Maps';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 const Mappage = () => {
     const [open, setOpen] = useState(false);
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
+    const newMarker = location.state?.newMarker;
 
     useEffect(() => {
         const savedUsername = localStorage.getItem('username');
@@ -26,20 +28,20 @@ const Mappage = () => {
                     </div>
                 </div>
                 <div className='rounded-t-3xl overflow-hidden shadow'>
-                <Maps/>
+                <Maps newMarker={newMarker}/>
 
                 {/* 플러스버튼 */}
                 <button
                         type='button'
                         aria-label='제보하기'
                         onClick={() => setOpen(v => !v)}
-                        className='absolute z-50 top-170 right-5 md:right-50 lg:right-153 top-180 w-12 place-items-center
+                        className='absolute z-100 bottom-25 right-5 md:right-50 lg:right-153 w-12 place-items-center
                hover:scale-105 active:scale-95 transition'>
                 <img src='/plusBtn.svg' alt='btn'></img>
                </button>
 
                 {/* 말풍선 */}
-               <div className={`absolute z-50 right-6 top-120 md:right-55 lg:right-153 top-160
+               <div className={`absolute z-50 right-6 top-115 md:right-55 lg:right-153
                transition ${open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}>
                     <button
                         type='button'

@@ -1,140 +1,180 @@
 // [포인트 전환]
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useAuth } from "../lib/authContext.jsx";
+import { pointsAPI } from "../lib/pointsAPI";
 import Navbar from "../components/Navbar";
 
-const PointExchange = ({ username = "홍길동" }) => {
+const PointExchange = () => {
     const navigate = useNavigate();
+    const { username, token } = useAuth(); // useAuth 훅으로 사용자 정보 가져오기
+
+    // 로딩 및 에러 상태를 추가하여 사용자 경험 개선
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
     const [page, setPage] = useState(1);
-    const itemsPerPage = 6;
+    const itemsPerPage = 5;
     const [pointHistory, setPointHistory] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
     const [summary, setSummary] = useState({ currentPoints: 0, availablePoints: 0 });
-    const token = localStorage.getItem("token"); // JWT 저장값 사용
 
-    // 포인트 현황 + 이력 불러오기
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // 포인트 요약
-                const summaryRes = await axios.get("http://localhost:8080/api/users/points/summary", {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (summaryRes.data.success) {
-                    setSummary(summaryRes.data.data);
-                }
+    // 서버로부터 데이터를 가져오는 함수
+    const fetchData = async () => {
+        setLoading(true); 
+        setError(null);
+        try {
+            // 포인트 현황과 이력을 동시에 요청하여 로딩 시간을 단축
+            const [summaryRes, historyRes] = await Promise.all([
+                pointsAPI.summary(),
+                pointsAPI.history()
+            ]);
 
-                // 포인트 이력
-                const historyRes = await axios.get("http://localhost:8080/api/point-history", {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (historyRes.data.success) {
-                    setPointHistory(historyRes.data.data);
-                    setTotalPages(Math.ceil(historyRes.data.data.length / itemsPerPage));
-                }
-            } catch (err) {
-                console.error("포인트 데이터 불러오기 실패:", err);
+            if (summaryRes.success && historyRes.success) {
+                const summaryData = summaryRes.data || summaryRes;
+                const historyData = historyRes.data || historyRes || [];
+                
+                setSummary(summaryData);
+                setPointHistory(historyData);
+                setTotalPages(Math.ceil(historyData.length / itemsPerPage));
+            } else {
+                throw new Error("데이터를 가져오는 데 실패했습니다.");
             }
-        };
-        fetchData();
-    }, [token]);
+        } catch (err) {
+            console.error("포인트 데이터 불러오기 실패:", err);
+            setError("데이터를 불러오는 중 오류가 발생했습니다.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    // 컴포넌트가 처음 로드될 때 데이터를 불러옴
+    useEffect(() => {
+        if (token) {
+            fetchData();
+        } else {
+            navigate('/login');
+        }
+    }, [token, navigate]);
+
+    // 현재 페이지에 맞는 내역만 잘라내기
     const paginatedHistory = pointHistory.slice(
         (page - 1) * itemsPerPage,
         page * itemsPerPage
     );
 
-    // 포인트 전환하기 (상품권 교환 요청)
-    const handleExchange = async () => {
-        try {
-            const res = await axios.post(
-                "http://localhost:8080/api/rewards",
-                {
-                    pointsUsed: 5000,
-                    rewardType: "FIVE_THOUSAND", // 5천원 상품권
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
+    // ✅ [수정] 포인트와 상품권 종류를 인자로 받도록 수정
+    const handleExchange = async (pointsToUse, rewardType) => {
+        if (summary.availablePoints < pointsToUse) {
+            alert(`전환 가능한 포인트가 ${pointsToUse.toLocaleString()}P 이상이어야 합니다.`);
+            return;
+        }
 
-            if (res.data.success) {
+        if (!window.confirm(`${pointsToUse.toLocaleString()}P를 상품권으로 전환하시겠습니까?`)) {
+            return;
+        }
+
+        try {
+            const res = await pointsAPI.redeem({ pointsUsed: pointsToUse, rewardType: rewardType });
+            
+            if (res.success) {
                 alert("상품권 교환 완료! 핀번호가 발급되었습니다.");
-                // 최신 데이터 다시 조회
-                window.location.reload();
+                await fetchData(); 
             } else {
-                alert(res.data.message);
+                alert(res.message || "교환에 실패했습니다.");
             }
         } catch (err) {
             console.error("상품권 교환 실패:", err);
-            alert("상품권 교환 중 오류가 발생했습니다.");
+            alert(err.response?.data?.message || "상품권 교환 중 오류가 발생했습니다.");
         }
     };
+
+    if (loading) {
+        return <div className="flex justify-center items-center min-h-screen">로딩 중...</div>;
+    }
+
+    if (error) {
+        return <div className="flex justify-center items-center min-h-screen">{error}</div>;
+    }
 
     return (
         <div className="w-[375px] mx-auto bg-white min-h-screen font-sans flex flex-col">
             {/* ===== 상단 헤더 ===== */}
-            <div className="bg-[#73C03F] text-white relative pt-1.5 pb-1.5 px-1.5">
-                {/* 뒤로가기 */}
+            <div className="bg-[#73C03F] text-white relative pt-2 pb-2 px-2">
                 <img
-                    src="../../public/arrow.png"
+                    src="/arrow.png"
                     alt="뒤로가기"
-                    className="w-6 h-6 absolute top-4 left-4"
+                    className="w-6 h-6 absolute top-4 left-4 cursor-pointer"
                     onClick={() => navigate("/mypage")}
                 />
-                {/* 이름 */}
-                <div className="flex items-center justify-end mt-8 pr-4">
+                <div className="flex items-center justify-end mt-2 pr-4">
                     <div className="text-xl font-semibold">{username} 님</div>
                 </div>
-                {/* 흰색 포인트 박스 */}
-                <div className="bg-white text-[#73C03F] rounded-t-[20px] mt-4 py-6 px-5 flex flex-col items-center">
+                <div className="bg-white text-[#73C03F] rounded-t-[20px] mt-2 pt-5 pb-2 px-4 flex flex-col items-center">
                     <img
-                        src="../../public/logo.svg"
+                        src="/logo.svg"
                         alt="profile"
-                        className="w-16 h-16 absolute top-10 left-12"
+                        className="w-16 h-16 absolute top-2 left-12"
                     />
-                    <div className="w-full flex justify-around font-bold mb-4">
+                    <div className="w-full flex justify-around font-bold mb-2">
                         <div className="text-center">
                             <div className="text-sm">보유 포인트</div>
-                            <div className="text-4xl">{summary.currentPoints}P</div>
+                            <div className="text-4xl">{summary.currentPoints.toLocaleString()}P</div>
                         </div>
                         <div className="flex items-center text-lg">▶</div>
                         <div className="text-center">
                             <div className="text-sm">전환 가능</div>
-                            <div className="text-4xl">{summary.availablePoints}P</div>
+                            <div className="text-4xl">{summary.availablePoints.toLocaleString()}P</div>
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleExchange}
-                        className="bg-[#73C03F] text-white font-bold rounded-lg px-6 py-2 mt-1 shadow"
-                    >
-                        전환하기
-                    </button>
+                    {/* ✅ [수정] 전환 버튼을 여러 개로 분리 */}
+                    <div className="w-full flex flex-col items-center gap-2">
+                        <button
+                            onClick={() => handleExchange(5000, "FIVE_THOUSAND")}
+                            disabled={summary.availablePoints < 5000}
+                            className="w-full bg-[#73C03F] text-white font-bold rounded-lg px-4 py-2 shadow active:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            5,000P 전환하기
+                        </button>
+                        <button
+                            onClick={() => handleExchange(10000, "TEN_THOUSAND")}
+                            disabled={summary.availablePoints < 10000}
+                            className="w-full bg-[#73C03F] text-white font-bold rounded-lg px-4 py-2 shadow active:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            10,000P 전환하기
+                        </button>
+                        <button
+                            onClick={() => handleExchange(30000, "THIRTY_THOUSAND")}
+                            disabled={summary.availablePoints < 30000}
+                            className="w-full bg-[#73C03F] text-white font-bold rounded-lg px-4 py-2 shadow active:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            30,000P 전환하기
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* ===== 전환 내역 영역 ===== */}
-            <div className="flex-1 mt-3">
-                {/* 헤더 */}
-                <div className="grid grid-cols-3 text-[#73C03F] font-semibold text-xs py-3 px-3 text-center border-b border-[#73C03F]">
-                    <div>전환날짜</div> {/* 날짜 */}
-                    <div>전환포인트</div> {/* 포인트 */}
-                    <div>잔여포인트</div> {/* 타입 */}
+            <div className="flex-1 mt-2">
+                <div className="grid grid-cols-3 text-[#73C03F] font-semibold text-xs py-2 px-1 text-center border-b border-[#73C03F]">
+                    <div>전환날짜</div>
+                    <div>전환포인트</div>
+                    <div>구분</div>
                 </div>
 
-                {/* 데이터 행 */}
                 {paginatedHistory.map((item) => (
                     <div
                         key={item.id}
-                        className="grid grid-cols-3 text-center text-sm py-3 px-3 border-b border-[#73C03F]"
+                        className="grid grid-cols-3 text-center text-sm py-2 px-2 border-b border-gray-200"
                     >
-                        <div className="text-[#73C03F]">
+                        <div className="text-gray-600">
                             {new Date(item.createdAt).toLocaleDateString()}
                         </div>
-                        <div className="text-[#73C03F]">{item.points}P</div>
-                        <div className="text-[#73C03F]">{item.type === "EARNED" ? "적립" : "사용"}</div>
+                        <div className={`font-semibold ${item.points > 0 ? "text-blue-600" : "text-red-600"}`}>
+                            {item.points.toLocaleString()}P
+                        </div>
+                        <div className="text-gray-500">{item.description}</div>
                     </div>
                 ))}
             </div>
@@ -149,9 +189,7 @@ const PointExchange = ({ username = "홍길동" }) => {
                     >
                         ◀
                     </button>
-
-                    <span className="text-sm text-[#73C03F] font-semibold">{page}</span>
-
+                    <span className="text-sm text-[#73C03F] font-semibold">{page} / {totalPages}</span>
                     <button
                         disabled={page === totalPages}
                         onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
