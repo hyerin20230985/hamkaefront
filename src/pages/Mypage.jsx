@@ -46,6 +46,7 @@ const MyPage = () => {
             } else {
                 throw new Error('사용자 정보를 가져오는 데 실패했습니다.');
             }
+
         } catch (err) {
             console.error("데이터 로딩 실패:", err);
             setError("데이터를 불러오는 중 오류가 발생했습니다.");
@@ -97,50 +98,14 @@ const MyPage = () => {
                 <img src="/logo.svg" alt="캐릭터" className="absolute bottom-0 right-6 w-20 h-20" />
             </div>
 
-                    <div className="flex-1 overflow-auto bg-white rounded-t-[28px] -mt-10 px-6 pt-8 pb-12 shadow-md flex flex-col items-center">
-                        <p className="text-[#73C03F] font-semibold text-base mb-6 w-full text-left">로그아웃</p>
-                        <input type="text" value={username || ""} readOnly className="w-full border border-[#73C03F] rounded-lg px-4 py-3 mb-4 text-[#73C03F] font-medium focus:outline-green-600 focus:outline-2 focus:outline-offset-2" />
-                        <input
-                            type="password"
-                            placeholder="비밀번호를 입력해주세요."
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleLogoutConfirm()}
-                            className="w-full border border-[#73C03F] rounded-lg px-4 py-3 mb-2 text-gray-700 placeholder:text-[#73C03F] focus:outline-green-600 focus:outline-2 focus:outline-offset-2"
-                        />
-                        {error && <p className="w-full text-red-500 text-sm mb-4">{error}</p>}
-                        <div className="flex gap-4 w-full mt-10">
-                            <button onClick={() => { setShowLogout(false); setPassword(""); setError(""); }} className="flex-1 bg-[#73C03F] text-white rounded-lg py-3 font-semibold ">이전</button>
-                            <button onClick={handleLogoutConfirm} disabled={loading} className="flex-1 bg-[#73C03F] text-white rounded-lg py-3 font-semibold">{loading ? "처리중..." : "로그아웃"}</button>
-                        </div>
-                    </div>
-                </>
-            ) : (
-                <>
-                    {/* ===== 기본 마이페이지 화면 ===== */}
-                    <div className="flex-none relative px-6 pt-6 pb-14 text-white h-[120px]">
-                        <h1 className="absolute top-6 left-6 flex items-center gap-1">
-                            <span className="text-[28px] font-extrabold tracking-tight">{username || "사용자"}</span>
-                            <span className="text-[14px] font-normal">님</span>
-                        </h1>
-                        <img src="../../public/logo.svg" alt="캐릭터" className="absolute bottom-0 right-6 w-20 h-20" />
-                    </div>
-
-                    <div className="flex-1 overflow-auto bg-white rounded-t-[28px] -mt-10 px-6 pt-8 pb-12 shadow-md flex flex-col">
-                        {/* 보유 포인트 */}
-                        <div className="mb-6">
-                            <p className="text-sm font-medium text-[#73C03F] mb-2">보유 포인트</p>
-                            {pointsLoading ? (
-                                <p className="text-base text-gray-500">불러오는 중...</p>
-                            ) : pointsError ? (
-                                <p className="text-sm text-red-500">{pointsError}</p>
-                            ) : (
-                                <p className="text-4xl font-extrabold text-[#73C03F] leading-none">
-                                    {summary.currentPoints} <span className="text-sm font-medium align-top">P</span>
-                                </p>
-                            )}
-                            <hr className="border-[#73C03F] border my-6" />
-                        </div>
+            <div className="flex-1 overflow-auto bg-white rounded-t-[28px] -mt-10 px-6 pt-8 pb-24 shadow-md flex flex-col">
+                <div>
+                    <p className="text-sm font-medium text-[#73C03F] mb-2">보유 포인트</p>
+                    <p className="text-4xl font-extrabold text-[#73C03F] leading-none">
+                        {profileData.currentPoints.toLocaleString()} <span className="text-sm font-medium align-top">P</span>
+                    </p>
+                    <hr className="border-[#73C03F] border my-3" />
+                </div>
 
                 <div className="flex gap-4 mb-3">
                     <button onClick={() => navigate("/report-history")} className="flex-1 bg-[#73C03F] text-white rounded-xl py-5 font-semibold flex flex-col items-center">
