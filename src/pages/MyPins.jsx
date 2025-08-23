@@ -33,7 +33,6 @@ const MyPins = () => {
             return () => clearTimeout(timer);
         }
     }, [revealedPins]);
-
     const loadPins = async () => {
         try {
             setLoading(true);
