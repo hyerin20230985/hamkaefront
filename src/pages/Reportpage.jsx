@@ -215,8 +215,7 @@ const Reportpage = () => {
                                             <button 
                                                 type='button'
                                                 onClick={() => removeFile(idx)}
-                                                className='absolute -top-2 -right-2 w-6 h-6 rounded-full
-                                   bg-white text-gray-700 shadow grid place-items-center text-xs'
+                                                className='absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white text-gray-700 shadow grid place-items-center text-xs'
                                                 aria-label="삭제"
                                                 title="삭제"
                                             >
