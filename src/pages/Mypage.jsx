@@ -1,19 +1,22 @@
 // [마이페이지]
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/authContext.jsx';
 import { userAPI } from '../lib/userAPI';
+import { markerAPI } from '../lib/markerAPI'; // ✅ 제보내역 API를 사용하기 위해 추가
 import Navbar from '../components/Navbar';
 
 const MyPage = () => {
     const navigate = useNavigate();
     const { token, username, logout } = useAuth();
-    
+
     const [profileData, setProfileData] = useState({
         currentPoints: 0,
         reportCount: 0,
         verificationCount: 0,
     });
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -29,24 +32,25 @@ const MyPage = () => {
         setLoading(true);
         setError(null);
         try {
-            // ✅ [수정] 여러 API 대신, 모든 정보가 포함된 프로필 API 하나만 호출하여 효율성을 높입니다.
-            const profileRes = await userAPI.getProfile();
+            // ✅ [수정] 활동 요약 API 대신, 실제 제보 목록을 가져오는 API를 호출합니다.
+            const [pointsRes, reportsRes, activityRes] = await Promise.all([
+                userAPI.getPointsSummary(),
+                markerAPI.getMyReports(), // 제보 목록 전체를 가져옵니다.
+                userAPI.getActivitySummary() // 인증 건수는 요약 API를 그대로 사용합니다.
+            ]);
 
-            if (profileRes.success) {
-                const data = profileRes.data || {};
-                
+            if (pointsRes.success && reportsRes.success && activityRes.success) {
+                const reportsData = reportsRes?.data || reportsRes || [];
+
                 setProfileData({
-                    // API 명세서에 따라 'points'를 currentPoints로 사용합니다.
-                    currentPoints: data.points || 0, 
-                    // API 명세서에 따라 'reportedMarkersCount'를 reportCount로 사용합니다.
-                    reportCount: data.reportedMarkersCount || 0, 
-                    // API 명세서에 따라 'uploadedPhotosCount'를 verificationCount로 사용합니다.
-                    verificationCount: data.uploadedPhotosCount || 0,
+                    currentPoints: pointsRes.data.currentPoints || 0,
+                    // ✅ [수정] 불러온 제보 목록의 실제 개수를 사용합니다.
+                    reportCount: reportsData.length,
+                    verificationCount: activityRes.data.uploadedPhotosCount || 0,
                 });
             } else {
                 throw new Error('사용자 정보를 가져오는 데 실패했습니다.');
             }
-
         } catch (err) {
             console.error("데이터 로딩 실패:", err);
             setError("데이터를 불러오는 중 오류가 발생했습니다.");
@@ -54,7 +58,7 @@ const MyPage = () => {
             setLoading(false);
         }
     };
-    
+
     const handleLogout = () => {
         logout();
         navigate('/');
@@ -77,8 +81,8 @@ const MyPage = () => {
                 <div className="text-center">
                     <div className="text-red-500 text-6xl mb-4">⚠️</div>
                     <p className="text-gray-600 mb-4">{error}</p>
-                    <button 
-                        onClick={fetchData} 
+                    <button
+                        onClick={fetchData}
                         className="bg-[#73C03F] text-white px-4 py-2 rounded-lg hover:bg-[#5a9a2f] transition-colors"
                     >
                         다시 시도
@@ -87,7 +91,7 @@ const MyPage = () => {
             </div>
         );
     }
-    
+
     return (
         <div className="flex flex-col min-h-screen font-sans max-w-[375px] mx-auto" style={{ backgroundColor: '#73C03F' }}>
             <div className="flex-none relative px-6 pt-6 pb-14 text-white h-[120px]">
@@ -108,24 +112,39 @@ const MyPage = () => {
                 </div>
 
                 <div className="flex gap-4 mb-3">
-                    <button onClick={() => navigate("/report-history")} className="flex-1 bg-[#73C03F] text-white rounded-xl py-5 font-semibold flex flex-col items-center">
+                    <button
+                        onClick={() => navigate("/report-history")}
+                        className="flex-1 bg-[#73C03F] text-white rounded-xl py-5 font-semibold flex flex-col items-center"
+                    >
                         <span>제보 내역</span>
                         <span className="text-lg mt-1 underline">{profileData.reportCount}건</span>
                     </button>
-                    <button onClick={() => navigate("/verification-history")} className="flex-1 bg-[#73C03F] text-white rounded-xl py-5 font-semibold flex flex-col items-center">
+                    <button
+                        onClick={() => navigate("/verification-history")}
+                        className="flex-1 bg-[#73C03F] text-white rounded-xl py-5 font-semibold flex flex-col items-center"
+                    >
                         <span>인증 내역</span>
                         <span className="text-lg mt-1 underline">{profileData.verificationCount}건</span>
                     </button>
                 </div>
 
                 <div className="flex flex-col gap-3">
-                    <button onClick={() => navigate("/my-pins")} className="w-full bg-[#73C03F] text-white rounded-xl py-3 font-medium flex justify-between items-center">
+                    <button
+                        onClick={() => navigate("/my-pins")}
+                        className="w-full bg-[#73C03F] text-white rounded-xl py-3 font-medium flex justify-between items-center"
+                    >
                         <span className="pl-3">내 핀번호</span><span className="text-2xl pr-2">{'>'}</span>
                     </button>
-                    <button onClick={() => navigate("/point-exchange")} className="w-full bg-[#73C03F] text-white rounded-xl py-3 font-medium flex justify-between items-center">
+                    <button
+                        onClick={() => navigate("/point-exchange")}
+                        className="w-full bg-[#73C03F] text-white rounded-xl py-3 font-medium flex justify-between items-center"
+                    >
                         <span className="pl-3">포인트 전환</span><span className="text-2xl pr-2">{'>'}</span>
                     </button>
-                    <button onClick={handleLogout} className="w-full bg-[#73C03F] text-white rounded-xl py-3 font-medium flex justify-between items-center">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full bg-[#73C03F] text-white rounded-xl py-3 font-medium flex justify-between items-center"
+                    >
                         <span className="pl-3">로그아웃</span><span className="text-2xl pr-2">{'>'}</span>
                     </button>
                 </div>
