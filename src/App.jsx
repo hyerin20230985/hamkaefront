@@ -14,6 +14,7 @@ import VerificationHistory from './pages/VerificationHistory';
 import PointExchange from './pages/PointExchange';
 import Inquiry from './pages/Inquiry';
 import Mainpage from './pages/Mainpage';
+import MyPins from './pages/MyPins';
 
 function App() {
     return (
@@ -30,6 +31,7 @@ function App() {
                 <Route path='/home' element={<Mainpage/>}/> 
                 <Route path="/report-history" element={<ReportHistory />} /> {/* 제보내역 */}
                 <Route path="/verification-history" element={<VerificationHistory />} /> {/* 인증내역 */}
+                <Route path="/my-pins" element={<MyPins />} />
                 <Route path="/point-exchange" element={<PointExchange />} /> {/* 포인트 전환 */}
                 <Route path="/inquiry" element={<Inquiry />} /> {/* 1대1 문의 */}
             </Routes>

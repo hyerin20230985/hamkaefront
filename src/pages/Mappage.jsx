@@ -1,12 +1,22 @@
-import React, { useState,} from 'react';
+import React, { useState, useEffect } from 'react';
 import Maps from '../components/Maps';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 const Mappage = () => {
     const [open, setOpen] = useState(false);
+    const [username, setUsername] = useState('');
     const navigate = useNavigate();
-    
+    const location = useLocation();
+    const newMarker = location.state?.newMarker;
+
+    useEffect(() => {
+        const savedUsername = localStorage.getItem('username');
+        if (savedUsername) {
+            setUsername(savedUsername);
+        }
+    }, []);
+
     return (
         <div className='text-white'>
             <div className='bg-[#73C03F]'>
@@ -22,7 +32,7 @@ const Mappage = () => {
                     </div>
                 </div>
                 <div className='rounded-t-3xl overflow-hidden shadow'>
-                <Maps/>
+                <Maps newMarker={newMarker}/>
 
                 {/* 플러스버튼 */}
                 <button

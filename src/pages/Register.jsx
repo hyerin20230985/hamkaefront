@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // 추가
+import { authAPI } from "../lib/authAPI";
 
 const Register = () => {
   const navigate = useNavigate(); // navigate 훅
@@ -45,7 +46,6 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("회원가입 데이터:", formData);
     setError("");
 
     // 최종 제출 시 유효성 확인
@@ -61,11 +61,18 @@ const Register = () => {
 
     setLoading(true);
     try {
-      // alert 대신 confirm 사용해서 확인 후 이동
-      if (window.confirm("회원가입 완료! 확인을 누르면 소개 페이지로 이동합니다.")) {
-        navigate("/introduce"); // Introduce 페이지로 이동
+      const response = await authAPI.register(
+        formData.name,
+        formData.username,
+        formData.password
+      );
+      if (response.success) {
+        alert("회원가입이 되었습니다! 로그인해주세요.");
+        navigate("/login"); // Introduce 페이지로 이동
+      } else {
+        setError(response.message || "회원가입에 실패했습니다.");
       }
-    } catch {
+    } catch (error) {
       setError("회원가입 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);

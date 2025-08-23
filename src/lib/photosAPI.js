@@ -1,4 +1,4 @@
-import api from "./apiClient";
+import { api } from "./apiClient";
 
 export const photosAPI = {
   // 특정 사진 조회

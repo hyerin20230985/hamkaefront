@@ -15,6 +15,12 @@ const Reportpage = () => {
     const [address, setAddress] = useState("위치 정보를 가져오는 중..."); // 주소 상태 추가
     const [locationError, setLocationError] = useState(""); // 위치 정보 오류 상태 추가
 
+    // 인증 가드: 토큰 없으면 로그인으로
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) navigate('/login');
+    }, [navigate]);
+
     // 컴포넌트 마운트 시 현재 위치 가져오기 및 주소 변환
     useEffect(() => {
         const fetchLocationAndAddress = async (lat, lng) => {
@@ -97,15 +103,38 @@ const Reportpage = () => {
         try {
             const imageFiles = files.filter(Boolean); // null이 아닌 파일만 필터링
 
-            await markerAPI.create({
+            const reportData = {
                 lat: String(location.lat),
                 lng: String(location.lng),
                 description: content.trim(),
                 images: imageFiles,
-            });
+            };
+            console.log("제보 데이터:", reportData);
 
+            const response = await markerAPI.create(reportData);
+            console.log("백엔드 응답 전체:", response);
+            
+            const payload = response?.data || response;
+            console.log("응답 payload:", payload);
+            
+            const created = payload?.data || payload;
+            console.log("생성된 마커 데이터:", created);
+            
             alert("제보가 접수되었습니다! 검토 후 포인트가 지급됩니다.");
-            navigate("/map"); // 성공 시 맵 페이지로 이동
+            
+            // 신규 마커 정보를 맵 페이지로 전달
+            // 백엔드 응답에는 marker_id만 있고, lat/lng/description은 원본 reportData에서 가져와야 함
+            const markerToPass = {
+                id: created?.marker_id, // 백엔드 응답의 marker_id 사용
+                lat: Number(reportData.lat), // 원본 reportData에서 lat 사용
+                lng: Number(reportData.lng), // 원본 reportData에서 lng 사용
+                description: reportData.description, // 원본 reportData에서 description 사용
+                status: 'ACTIVE', // 새로 생성된 마커는 ACTIVE 상태
+                photos: created?.uploaded_images || [] // 백엔드 응답의 uploaded_images 사용
+            };
+            console.log("맵으로 전달할 마커 데이터:", markerToPass);
+            
+            navigate("/map", { state: { newMarker: markerToPass } });
         } catch (err) {
             console.error(err);
             alert("제보 중 오류가 발생했습니다. 다시 시도해주세요.");

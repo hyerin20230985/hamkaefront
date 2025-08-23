@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../lib/authContext.jsx';
 import Login from '../components/Login';
 
 const Loginpage = () => {
     const navigate = useNavigate();
+    const { token, isAuthenticated } = useAuth();
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
+        if (isAuthenticated) {
             navigate('/home');
         }
-    }, [navigate]);
+    }, [isAuthenticated, navigate]);
 
     const handleLoginSuccess = () => {
         navigate('/home');

@@ -1,120 +1,102 @@
 // [마이페이지]
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../lib/authContext.jsx';
+import { userAPI } from '../lib/userAPI';
 import Navbar from '../components/Navbar';
-import axios from 'axios';
 
-const MyPage = ({ username }) => {
+const MyPage = () => {
     const navigate = useNavigate();
-    const [showLogout, setShowLogout] = useState(false);
-    const [password, setPassword] = useState("");
+    const { token, username, logout } = useAuth();
+    
+    const [profileData, setProfileData] = useState({
+        currentPoints: 0,
+        reportCount: 0,
+        verificationCount: 0,
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-
-    // 포인트, 제보/인증 건수 상태
-    const [summary, setSummary] = useState({ currentPoints: 0 });
-    const [reportCount, setReportCount] = useState(0);
-    const [verificationCount, setVerificationCount] = useState(0);
-
-    const [pointsLoading, setPointsLoading] = useState(false);
-    const [pointsError, setPointsError] = useState("");
-
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
-    const token = localStorage.getItem("token");
-
-    // ✅ 마이페이지 진입 시 사용자 데이터 불러오기
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setPointsLoading(true);
-                // 보유 포인트 조회
-                const summaryRes = await axios.get(`${API_URL}/api/users/points/summary`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (summaryRes.data.success) {
-                    setSummary(summaryRes.data.data);
-                }
-
-                // 제보 내역 개수 조회
-                const reportRes = await axios.get(`${API_URL}/api/markers`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (reportRes.data.success) {
-                    setReportCount(reportRes.data.data.length);
-                }
-
-                // 인증 내역 개수 조회
-                const verificationRes = await axios.get(`${API_URL}/api/verifications`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (verificationRes.data.success) {
-                    setVerificationCount(verificationRes.data.data.length);
-                }
-            } catch (err) {
-                setPointsError("데이터를 불러오는 중 오류가 발생했습니다.");
-                console.error(err);
-            } finally {
-                setPointsLoading(false);
-            }
-        };
-
-        if (token) fetchData();
-    }, [token]);
-
-    // ✅ 로그아웃
-    const handleLogoutConfirm = async () => {
-        if (loading) return;
-        setError("");
-
-        if (!password) {
-            setError("비밀번호를 입력해주세요.");
+        if (!token) {
+            navigate('/login');
             return;
         }
+        fetchData();
+    }, [token, navigate]);
 
+    const fetchData = async () => {
+        setLoading(true);
+        setError(null);
         try {
-            setLoading(true);
-            const res = await axios.post(
-                `${API_URL}/auth/logout`,
-                { username, password },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            // ✅ [수정] 여러 API 대신, 모든 정보가 포함된 프로필 API 하나만 호출하여 효율성을 높입니다.
+            const profileRes = await userAPI.getProfile();
 
-            if (res.data.success) {
-                localStorage.removeItem("token");
-                localStorage.removeItem("username");
-                navigate("/login");
+            if (profileRes.success) {
+                const data = profileRes.data || {};
+                
+                setProfileData({
+                    // API 명세서에 따라 'points'를 currentPoints로 사용합니다.
+                    currentPoints: data.points || 0, 
+                    // API 명세서에 따라 'reportedMarkersCount'를 reportCount로 사용합니다.
+                    reportCount: data.reportedMarkersCount || 0, 
+                    // API 명세서에 따라 'uploadedPhotosCount'를 verificationCount로 사용합니다.
+                    verificationCount: data.uploadedPhotosCount || 0,
+                });
             } else {
-                setError(res.data.message || "로그아웃에 실패했습니다.");
+                throw new Error('사용자 정보를 가져오는 데 실패했습니다.');
             }
+
         } catch (err) {
-            setError(
-                err?.response?.data?.message || "서버 오류로 로그아웃에 실패했습니다."
-            );
+            console.error("데이터 로딩 실패:", err);
+            setError("데이터를 불러오는 중 오류가 발생했습니다.");
         } finally {
             setLoading(false);
         }
     };
+    
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
 
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center max-w-[375px] mx-auto">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#73C03F] mx-auto mb-4"></div>
+                    <p className="text-gray-600">사용자 정보를 불러오는 중...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center max-w-[375px] mx-auto">
+                <div className="text-center">
+                    <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                    <p className="text-gray-600 mb-4">{error}</p>
+                    <button 
+                        onClick={fetchData} 
+                        className="bg-[#73C03F] text-white px-4 py-2 rounded-lg hover:bg-[#5a9a2f] transition-colors"
+                    >
+                        다시 시도
+                    </button>
+                </div>
+            </div>
+        );
+    }
+    
     return (
         <div className="flex flex-col min-h-screen font-sans max-w-[375px] mx-auto" style={{ backgroundColor: '#73C03F' }}>
-            {showLogout ? (
-                <>
-                    {/* ===== 로그아웃 화면 ===== */}
-                    <div className="flex-none relative px-6 pt-6 pb-14 text-white h-[120px]">
-                        <h1 className="absolute top-6 left-6 flex items-center gap-1">
-                            <span className="text-[28px] font-extrabold tracking-tight">
-                                {username || "사용자"}
-                            </span>
-                            <span className="text-[14px] font-normal">님</span>
-                        </h1>
-                        <img src="../../public/logo.svg" alt="캐릭터" className="absolute bottom-0 right-6 w-20 h-20" />
-                    </div>
+            <div className="flex-none relative px-6 pt-6 pb-14 text-white h-[120px]">
+                <h1 className="absolute top-6 left-6 flex items-center gap-1">
+                    <span className="text-[28px] font-extrabold tracking-tight">{username}</span>
+                    <span className="text-[14px] font-normal">님</span>
+                </h1>
+                <img src="/logo.svg" alt="캐릭터" className="absolute bottom-0 right-6 w-20 h-20" />
+            </div>
 
                     <div className="flex-1 overflow-auto bg-white rounded-t-[28px] -mt-10 px-6 pt-8 pb-12 shadow-md flex flex-col items-center">
                         <p className="text-[#73C03F] font-semibold text-base mb-6 w-full text-left">로그아웃</p>
@@ -161,33 +143,29 @@ const MyPage = ({ username }) => {
                             <hr className="border-[#73C03F] border my-6" />
                         </div>
 
-                        {/* 제보/인증 버튼 */}
-                        <div className="flex gap-4 mb-8">
-                            <button onClick={() => navigate("/report-history")} className="flex-1 bg-[#73C03F] text-white rounded-xl py-5 font-semibold flex flex-col items-center">
-                                <span>제보 내역</span>
-                                <span className="text-lg mt-1 underline">{reportCount}건</span>
-                            </button>
-                            <button onClick={() => navigate("/verification-history")} className="flex-1 bg-[#73C03F] text-white rounded-xl py-5 font-semibold flex flex-col items-center">
-                                <span>인증 내역</span>
-                                <span className="text-lg mt-1 underline">{verificationCount}건</span>
-                            </button>
-                        </div>
+                <div className="flex gap-4 mb-3">
+                    <button onClick={() => navigate("/report-history")} className="flex-1 bg-[#73C03F] text-white rounded-xl py-5 font-semibold flex flex-col items-center">
+                        <span>제보 내역</span>
+                        <span className="text-lg mt-1 underline">{profileData.reportCount}건</span>
+                    </button>
+                    <button onClick={() => navigate("/verification-history")} className="flex-1 bg-[#73C03F] text-white rounded-xl py-5 font-semibold flex flex-col items-center">
+                        <span>인증 내역</span>
+                        <span className="text-lg mt-1 underline">{profileData.verificationCount}건</span>
+                    </button>
+                </div>
 
-                        {/* 메뉴 버튼 */}
-                        <div className="flex flex-col gap-3">
-                            <button onClick={() => navigate("/point-exchange")} className="w-full bg-[#73C03F] text-white rounded-xl py-4 font-medium flex justify-between items-center">
-                                <span className="pl-3">포인트 전환</span><span className="text-2xl pr-2">{'>'}</span>
-                            </button>
-                            <button onClick={() => navigate("/inquiry")} className="w-full bg-[#73C03F] text-white rounded-xl py-4 font-medium flex justify-between items-center">
-                                <span className="pl-3">1:1 문의</span><span className="text-2xl pr-2">{'>'}</span>
-                            </button>
-                            <button onClick={() => setShowLogout(true)} className="w-full bg-[#73C03F] text-white rounded-xl py-4 font-medium flex justify-between items-center">
-                                <span className="pl-3">로그아웃</span><span className="text-2xl pr-2">{'>'}</span>
-                            </button>
-                        </div>
-                    </div>
-                </>
-            )}
+                <div className="flex flex-col gap-3">
+                    <button onClick={() => navigate("/my-pins")} className="w-full bg-[#73C03F] text-white rounded-xl py-3 font-medium flex justify-between items-center">
+                        <span className="pl-3">내 핀번호</span><span className="text-2xl pr-2">{'>'}</span>
+                    </button>
+                    <button onClick={() => navigate("/point-exchange")} className="w-full bg-[#73C03F] text-white rounded-xl py-3 font-medium flex justify-between items-center">
+                        <span className="pl-3">포인트 전환</span><span className="text-2xl pr-2">{'>'}</span>
+                    </button>
+                    <button onClick={handleLogout} className="w-full bg-[#73C03F] text-white rounded-xl py-3 font-medium flex justify-between items-center">
+                        <span className="pl-3">로그아웃</span><span className="text-2xl pr-2">{'>'}</span>
+                    </button>
+                </div>
+            </div>
             <Navbar />
         </div>
     );
